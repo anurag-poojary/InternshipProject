@@ -4,8 +4,12 @@ import { Container, Nav, Navbar, NavDropdown } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faBook, faUser, faSignInAlt, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { useParams } from 'react-router-dom';
 
 const CustomNavbar = () => {
+  const params = useParams();
+  let userId = params.user;
+
   const navigate = useNavigate();
   // const [isLoggedIn, setIsLoggedIn] = useState(true);
 
@@ -47,7 +51,7 @@ const CustomNavbar = () => {
               <NavDropdown.Item as={Link} to="/about">About</NavDropdown.Item>
             </NavDropdown>
           </Nav>
-          {(!localStorage.getItem("authToken")) ? 
+          {(userId === null) ? 
             <Nav className="nav navbar-nav navbar-right">
               <Nav.Link as={Link} to="/signup" className="nav-link btn">
                 <FontAwesomeIcon icon={faUser} /> Signup
@@ -73,3 +77,5 @@ const CustomNavbar = () => {
 };
 
 export default CustomNavbar;
+
+//!localStorage.getItem("authToken")
