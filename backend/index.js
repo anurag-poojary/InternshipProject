@@ -1,35 +1,37 @@
-// console.log("Hello Everyone");
 const express = require("express");
 const mongoose = require("mongoose");
-const routes = require("./routes/route");
 const cors = require("cors");
-
-
 const app = express();
-app.use(cors());
-// DB Connection
-app.use(express.json());
-
-
-app.use("/", routes);
-
+require("dotenv").config();
+const cookieParser = require("cookie-parser");
+const authRoute = require("./Routes/AuthRoute");
+const { MONGO_URL, PORT } = process.env;
 mongoose
-  .connect(
-    "mongodb+srv://badaz:Anurag.12102003@cluster0.jtvibdz.mongodb.net/Movies"
-  )
-  .then(() => {
-    console.log("Database is Connected Successfully 😎");
+  .connect(MONGO_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch((err) => {
-    console.log(err, "Something Went Wrong");
-  });
+  .then(() => console.log("MongoDB is  connected successfully"))
+  .catch((err) => console.error(err));
 
+  
+  app.use(
+    cors({
+      origin: ["http://localhost:3000"],
+      methods: ["GET", "POST", "PUT", "DELETE"],
+      credentials: true,
+    })
+    );
+    
+    app.use(cookieParser());
+    
+    app.use(express.json());
+    
+    app.use("/",authRoute);
+    // app.use("/",recipeRoute);
 
-// Test API
-app.get("/test", (req, res) => {
-  res.send("This is Test Api ");
-});
-
-app.listen(5000, () => {
-  console.log("Server Is Running On Port 5000");
-});
+    // app.use('/api/users', routes.userRouter);
+    
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT}`);
+    });

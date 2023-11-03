@@ -5,34 +5,57 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const Login = () => {
-  const [credentials, setCredentials] = useState({ email: "", password: "" });
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const [inputValue, setInputValue] = useState({
+    email: "",
+    password: "",
+  });
+  const { email, password } = inputValue;
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setInputValue((prevInputValue) => ({
+      ...prevInputValue,
+      [name]: value,
+    }));
+  };
+
+  const handleError = (err) =>
+    toast.error(err, {
+      position: "bottom-left",
+    });
+  const handleSuccess = (msg) =>
+    toast.success(msg, {
+      position: "bottom-left",
+    });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post("http://localhost:5000/login", {
-        email: credentials.email,
-        password: credentials.password,
-      });
-
-      if (response) {
-        localStorage.setItem("authToken", response.data.authToken);
-        console.log(localStorage.getItem("authToken"));
-        toast.success("Login successful");
-        navigate("/");
+      const { data } = await axios.post(
+        "http://localhost:4000/login",
+        {
+          ...inputValue,
+        },
+        { withCredentials: true }
+      );
+      console.log(data);
+      const { success, message } = data;
+      if (success) {
+        handleSuccess(message);
+        setTimeout(() => {
+          navigate(`/${inputValue.email}`);
+        }, 1000);
       } else {
-        toast.error("Enter valid credentials");
+        handleError(message);
       }
     } catch (error) {
-      console.error("An error occurred:", error);
-      toast.error("An error occurred. Please try again later.");
+      console.log(error);
     }
-  };
-
-  const onChange = (event) => {
-    setCredentials({ ...credentials, [event.target.name]: event.target.value });
+    setInputValue({
+      email: "",
+      password: "",
+    });
   };
 
   return (
@@ -56,8 +79,8 @@ const Login = () => {
                       className="form-control"
                       id="email"
                       name="email"
-                      value={credentials.email}
-                      onChange={onChange}
+                      value={email}
+                      onChange={handleOnChange}
                     />
                   </div>
                   <div className="form-group">
@@ -70,8 +93,8 @@ const Login = () => {
                       className="form-control"
                       id="password"
                       name="password"
-                      value={credentials.password}
-                      onChange={onChange}
+                      value={password}
+                      onChange={handleOnChange}
                     />
                   </div>
                   <button type="submit" className="mt-2 btn btn-info">

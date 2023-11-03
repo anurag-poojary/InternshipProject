@@ -5,34 +5,59 @@ import "react-toastify/dist/ReactToastify.css"; // Import the CSS for react-toas
 import axios from "axios";
 
 const SignIn = () => {
-  const [credentials, setCredentials] = useState({ name: "", email: "", password: "" });
-  let navigate = useNavigate();
+  const navigate = useNavigate();
+  const [inputValue, setInputValue] = useState({
+    email: "",
+    username: "",
+    password: "",
+  });
+  const { email, password, username } = inputValue;
+
+  const handleOnChange = (e) => {
+    const { name, value } = e.target;
+    setInputValue((prevInputValue) => ({
+      ...prevInputValue,
+      [name]: value,
+    }));
+  };
+
+  const handleError = (err) =>
+    toast.error(err, {
+      position: "bottom-left",
+    });
+  const handleSuccess = (msg) =>
+    toast.success(msg, {
+      position: "bottom-right",
+    });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const response = await axios.post("http://localhost:5000/register", {
-        name: credentials.name,
-        password: credentials.password,
-        email: credentials.email,
-      });
-
-      if (response.data.success) {
-        toast.success("Account created");
-        navigate('/');
+      const { data } = await axios.post(
+        "http://localhost:4000/signup",
+        {
+          ...inputValue,
+        },
+        { withCredentials: true }
+      );
+      const { success, message } = data;
+      if (success) {
+        handleSuccess(message);
+        setTimeout(() => {
+          navigate("/login");
+        }, 1000);
       } else {
-        toast.error("Enter valid credentials");
+        handleError(message);
       }
     } catch (error) {
-      console.error("An error occurred:", error);
-      toast.error("An error occurred. Please try again later.");
+      console.log(error);
     }
-  }
-
-  const onChange = (event) => {
-    setCredentials({ ...credentials, [event.target.name]: event.target.value });
-  }
+    setInputValue({
+      email: "",
+      username: "",
+      password: "",
+    });
+  };
 
   return (
     <div className="container vh-100">
@@ -46,11 +71,11 @@ const SignIn = () => {
               <form onSubmit={handleSubmit}>
                 <div className="form-group">
                   <label htmlFor="name" className="text-white">Name:</label>
-                  <input type="text" placeholder="Enter the Name" className="form-control" name="name" value={credentials.name} onChange={onChange} />
+                  <input type="text" placeholder="Enter the Name" className="form-control" name="username" value={username} onChange={handleOnChange} />
                 </div>
                 <div className="form-group">
                   <label htmlFor="email" className="text-white">Email:</label>
-                  <input type="email" placeholder="Enter email" className="form-control" name="email" value={credentials.email} onChange={onChange} />
+                  <input type="email" placeholder="Enter email" className="form-control" name="email" value={email} onChange={handleOnChange} />
                 </div>
                 <div className="form-group">
                   <label htmlFor="password" className="text-white">Password:</label>
@@ -59,8 +84,8 @@ const SignIn = () => {
                     placeholder="Enter password"
                     className="form-control"
                     name="password"
-                    value={credentials.password}
-                    onChange={onChange}
+                    value={password}
+                    onChange={handleOnChange}
                   />
                 </div>
                 <button type="submit" className="m-3 btn btn-primary btn-block">
